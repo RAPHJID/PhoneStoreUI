@@ -1,10 +1,15 @@
-function App() {
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Phones from "./pages/Phones";
+
+const App = () => {
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <h1 className="text-3xl font-bold text-blue-600">Phone Store Dashboard</h1>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Phones />} />
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;
-
