@@ -4,6 +4,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Phones from "./pages/Phones";
 import PhoneDetails from "./pages/PhoneDetails";
 import About from "./pages/About";
+import Navbar from "./pages/Navbar";
+
 
 function App() {
   return (

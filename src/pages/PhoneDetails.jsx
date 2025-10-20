@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 const PhoneDetails = () => {
   const { id } = useParams(); 
   const [phone, setPhone] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPhone = async () => {
@@ -48,8 +49,12 @@ const PhoneDetails = () => {
       <p className="text-lg font-semibold">{phone.brand}</p>
       <p className="text-gray-700 mt-2">{phone.description || "No description available."}</p>
       <p className="text-xl font-semibold mt-4">Price: ${phone.price}</p>
-      <p className="text-gray-600 mt-1">Stock: {phone.stockQuantity}</p>
+      <button onClick={() => navigate(-1)}className="mt-4 px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700">
+            &larr; Back
+    </button>
     </div>
+
+    
   );
 };
 
