@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Phones = () => {
   const [phones, setPhones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPhones = async () => {
@@ -33,7 +35,8 @@ const Phones = () => {
       {phones.map((phone) => (
         <div
           key={phone.id}
-          className="border rounded-lg p-4 shadow hover:shadow-lg transition"
+          className="border rounded-lg p-4 shadow hover:shadow-lg transition cursor-pointer"
+          onClick={() => navigate(`/phones/${phone.id}`)}
         >
           {phone.imageUrl ? (
             <img
@@ -50,9 +53,7 @@ const Phones = () => {
           <p className="text-sm text-gray-600">{phone.brand}</p>
           <p className="text-sm">{phone.description || "No description"}</p>
           <p className="text-lg font-semibold mt-2">Price: ${phone.price}</p>
-          <p className="text-sm mt-1">
-            Stock: {phone.stockQuantity}
-          </p>
+          <p className="text-sm mt-1">Stock: {phone.stockQuantity}</p>
         </div>
       ))}
     </div>

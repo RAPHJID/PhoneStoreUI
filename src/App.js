@@ -1,14 +1,17 @@
+
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Phones from "./pages/Phones";
+import PhoneDetails from "./pages/PhoneDetails";
+import About from "./pages/About";
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Only render Phones when URL is /phones */}
-        <Route path="/phones" element={<Phones />} />
-        <Route path="/" element={<h1 className="text-center mt-10">Welcome Home</h1>} />
+        <Route path="/" element={<Phones />} />
+        <Route path="/phones/:id" element={<PhoneDetails />} />
+        <Route path="/about" element={<About />} />
       </Routes>
     </Router>
   );
