@@ -35,7 +35,7 @@ const Phones = () => {
       {phones.map((phone) => (
         <div
           key={phone.id}
-          className="border rounded-lg p-4 shadow hover:shadow-lg transition cursor-pointer"
+          className="relative border rounded-lg p-4 shadow hover:shadow-xl transition cursor-pointer group"
           onClick={() => navigate(`/phones/${phone.id}`)}
         >
           {phone.imageUrl ? (
@@ -49,6 +49,12 @@ const Phones = () => {
               <span className="text-gray-500">No Image</span>
             </div>
           )}
+
+          {/* Hover overlay */}
+          <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white font-semibold rounded transition">
+            View Details
+          </div>
+
           <h2 className="text-lg font-bold">{phone.name}</h2>
           <p className="text-sm text-gray-600">{phone.brand}</p>
           <p className="text-sm">{phone.description || "No description"}</p>
