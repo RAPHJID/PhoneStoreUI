@@ -5,18 +5,18 @@ const Phones = () => {
   const [phones, setPhones] = useState([]);
   const [filteredPhones, setFilteredPhones] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortOption, setSortOption] = useState(""); // <-- new
+  const [sortOption, setSortOption] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1); // <-- new
+  const phonesPerPage = 8; // Number of phones per page
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPhones = async () => {
       try {
         const response = await fetch("http://localhost:5082/api/Phone");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         setPhones(data);
         setFilteredPhones(data);
@@ -31,7 +31,7 @@ const Phones = () => {
     fetchPhones();
   }, []);
 
-  // Filter based on search
+  // Filter + sort
   useEffect(() => {
     let filtered = phones.filter(
       (phone) =>
@@ -39,32 +39,30 @@ const Phones = () => {
         phone.brand.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Apply sorting
-    if (sortOption === "price-asc") {
-      filtered.sort((a, b) => a.price - b.price);
-    } else if (sortOption === "price-desc") {
-      filtered.sort((a, b) => b.price - a.price);
-    } else if (sortOption === "stock-asc") {
-      filtered.sort((a, b) => a.stockQuantity - b.stockQuantity);
-    } else if (sortOption === "stock-desc") {
-      filtered.sort((a, b) => b.stockQuantity - a.stockQuantity);
-    } else if (sortOption === "name-asc") {
-      filtered.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (sortOption === "name-desc") {
-      filtered.sort((a, b) => b.name.localeCompare(a.name));
-    }
+    if (sortOption === "price-asc") filtered.sort((a, b) => a.price - b.price);
+    else if (sortOption === "price-desc") filtered.sort((a, b) => b.price - a.price);
+    else if (sortOption === "stock-asc") filtered.sort((a, b) => a.stockQuantity - b.stockQuantity);
+    else if (sortOption === "stock-desc") filtered.sort((a, b) => b.stockQuantity - a.stockQuantity);
+    else if (sortOption === "name-asc") filtered.sort((a, b) => a.name.localeCompare(b.name));
+    else if (sortOption === "name-desc") filtered.sort((a, b) => b.name.localeCompare(a.name));
 
     setFilteredPhones(filtered);
+    setCurrentPage(1); // Reset page when search or sort changes
   }, [searchTerm, sortOption, phones]);
 
   if (loading) return <p>Loading phones...</p>;
   if (error) return <p>Error: {error}</p>;
 
+  // Pagination calculations
+  const indexOfLastPhone = currentPage * phonesPerPage;
+  const indexOfFirstPhone = indexOfLastPhone - phonesPerPage;
+  const currentPhones = filteredPhones.slice(indexOfFirstPhone, indexOfLastPhone);
+  const totalPages = Math.ceil(filteredPhones.length / phonesPerPage);
+
   return (
     <div className="p-4">
-      {/* Search and Sort Controls */}
+      {/* Search + Sort */}
       <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center max-w-md mx-auto">
-        {/* Search Input */}
         <div className="relative flex-1 w-full">
           <input
             type="text"
@@ -88,7 +86,6 @@ const Phones = () => {
           </svg>
         </div>
 
-        {/* Sort Dropdown */}
         <select
           value={sortOption}
           onChange={(e) => setSortOption(e.target.value)}
@@ -106,7 +103,7 @@ const Phones = () => {
 
       {/* Phones Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {filteredPhones.map((phone) => (
+        {currentPhones.map((phone) => (
           <div
             key={phone.id}
             className="relative border rounded-lg p-4 shadow hover:shadow-2xl hover:scale-105 transition-transform duration-300 cursor-pointer group bg-white"
@@ -124,34 +121,23 @@ const Phones = () => {
               </div>
             )}
 
-            {/* Hover overlay */}
             <div className="absolute inset-0 bg-black bg-opacity-30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white font-semibold rounded transition">
               View Details
             </div>
 
-            {/* Stock Badge */}
             <div className="absolute top-3 right-3">
               {phone.stockQuantity === 0 ? (
-                <span className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">
-                  Out of Stock
-                </span>
+                <span className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">Out of Stock</span>
               ) : phone.stockQuantity < 5 ? (
-                <span className="bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                  Low Stock
-                </span>
+                <span className="bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full">Low Stock</span>
               ) : (
-                <span className="bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-full">
-                  In Stock
-                </span>
+                <span className="bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-full">In Stock</span>
               )}
             </div>
 
-            {/* Optional New Arrival Badge */}
             {phone.isNew && (
               <div className="absolute top-3 left-3">
-                <span className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">
-                  New
-                </span>
+                <span className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">New</span>
               </div>
             )}
 
@@ -162,6 +148,52 @@ const Phones = () => {
           </div>
         ))}
       </div>
+
+      {/* Pagination */}
+{totalPages > 1 && (
+  <div className="flex justify-center items-center mt-6 gap-2 flex-wrap">
+    {/* Prev Button */}
+    <button
+      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+      disabled={currentPage === 1}
+      className={`px-3 py-1 rounded-full border ${
+        currentPage === 1
+          ? "bg-gray-300 text-gray-600 border-gray-300 cursor-not-allowed"
+          : "bg-white text-gray-800 border-gray-300 hover:bg-gray-200"
+      } transition`}
+    >
+      Prev
+    </button>
+
+    {/* Numbered Page Buttons */}
+    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+      <button
+        key={page}
+        onClick={() => setCurrentPage(page)}
+        className={`px-3 py-1 rounded-full border ${
+          page === currentPage
+            ? "bg-gray-800 text-white border-gray-800"
+            : "bg-white text-gray-800 border-gray-300 hover:bg-gray-200"
+        } transition`}
+      >
+        {page}
+      </button>
+    ))}
+
+    {/* Next Button */}
+    <button
+      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+      disabled={currentPage === totalPages}
+      className={`px-3 py-1 rounded-full border ${
+        currentPage === totalPages
+          ? "bg-gray-300 text-gray-600 border-gray-300 cursor-not-allowed"
+          : "bg-white text-gray-800 border-gray-300 hover:bg-gray-200"
+      } transition`}
+    >
+      Next
+    </button>
+  </div>
+)}
     </div>
   );
 };
