@@ -8,8 +8,8 @@ const Phones = () => {
   const [sortOption, setSortOption] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1); // <-- new
-  const phonesPerPage = 8; // Number of phones per page
+  const [currentPage, setCurrentPage] = useState(1);
+  const phonesPerPage = 8;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,7 +31,6 @@ const Phones = () => {
     fetchPhones();
   }, []);
 
-  // Filter + sort
   useEffect(() => {
     let filtered = phones.filter(
       (phone) =>
@@ -47,13 +46,25 @@ const Phones = () => {
     else if (sortOption === "name-desc") filtered.sort((a, b) => b.name.localeCompare(a.name));
 
     setFilteredPhones(filtered);
-    setCurrentPage(1); // Reset page when search or sort changes
+    setCurrentPage(1);
   }, [searchTerm, sortOption, phones]);
 
-  if (loading) return <p>Loading phones...</p>;
-  if (error) return <p>Error: {error}</p>;
+  // Loading + error states
+  if (loading)
+    return (
+      <div className="flex justify-center items-center h-64">
+        <p className="animate-pulse text-gray-500">Loading phones...</p>
+      </div>
+    );
 
-  // Pagination calculations
+  if (error)
+    return (
+      <div className="flex justify-center items-center h-64 text-red-500">
+        <p>Error: {error}</p>
+      </div>
+    );
+
+  // Pagination
   const indexOfLastPhone = currentPage * phonesPerPage;
   const indexOfFirstPhone = indexOfLastPhone - phonesPerPage;
   const currentPhones = filteredPhones.slice(indexOfFirstPhone, indexOfLastPhone);
@@ -61,8 +72,9 @@ const Phones = () => {
 
   return (
     <div className="p-4">
-      {/* Search + Sort */}
-      <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center max-w-md mx-auto">
+      {/* Search, Sort, Clear */}
+      <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center max-w-2xl mx-auto">
+        {/* Search */}
         <div className="relative flex-1 w-full">
           <input
             type="text"
@@ -86,6 +98,7 @@ const Phones = () => {
           </svg>
         </div>
 
+        {/* Sort */}
         <select
           value={sortOption}
           onChange={(e) => setSortOption(e.target.value)}
@@ -99,6 +112,18 @@ const Phones = () => {
           <option value="name-asc">Name: A → Z</option>
           <option value="name-desc">Name: Z → A</option>
         </select>
+
+        {/* Clear Filters */}
+        <button
+          onClick={() => {
+            setSearchTerm("");
+            setSortOption("");
+            setFilteredPhones(phones);
+          }}
+          className="px-4 py-2 bg-gray-200 rounded-full text-sm hover:bg-gray-300 transition"
+        >
+          Clear
+        </button>
       </div>
 
       {/* Phones Grid */}
@@ -107,7 +132,6 @@ const Phones = () => {
           <div
             key={phone.id}
             className="relative border rounded-lg p-4 shadow hover:shadow-2xl hover:scale-105 transition-transform duration-300 cursor-pointer group bg-white"
-            onClick={() => navigate(`/phones/${phone.id}`)}
           >
             {phone.imageUrl ? (
               <img
@@ -120,10 +144,6 @@ const Phones = () => {
                 <span className="text-gray-500">No Image</span>
               </div>
             )}
-
-            <div className="absolute inset-0 bg-black bg-opacity-30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white font-semibold rounded transition">
-              View Details
-            </div>
 
             <div className="absolute top-3 right-3">
               {phone.stockQuantity === 0 ? (
@@ -145,55 +165,60 @@ const Phones = () => {
             <p className="text-sm text-gray-600">{phone.brand}</p>
             <p className="text-sm">{phone.description || "No description"}</p>
             <p className="text-lg font-semibold mt-2">Price: ${phone.price}</p>
+
+            {/* View Details Button */}
+            <button
+              onClick={() => navigate(`/phones/${phone.id}`)}
+              className="mt-3 w-full bg-gray-800 text-white py-2 rounded hover:bg-gray-700 transition"
+            >
+              View Details
+            </button>
           </div>
         ))}
       </div>
 
       {/* Pagination */}
-{totalPages > 1 && (
-  <div className="flex justify-center items-center mt-6 gap-2 flex-wrap">
-    {/* Prev Button */}
-    <button
-      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-      disabled={currentPage === 1}
-      className={`px-3 py-1 rounded-full border ${
-        currentPage === 1
-          ? "bg-gray-300 text-gray-600 border-gray-300 cursor-not-allowed"
-          : "bg-white text-gray-800 border-gray-300 hover:bg-gray-200"
-      } transition`}
-    >
-      Prev
-    </button>
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center mt-6 gap-2 flex-wrap">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className={`px-3 py-1 rounded-full border ${
+              currentPage === 1
+                ? "bg-gray-300 text-gray-600 border-gray-300 cursor-not-allowed"
+                : "bg-white text-gray-800 border-gray-300 hover:bg-gray-200"
+            } transition`}
+          >
+            Prev
+          </button>
 
-    {/* Numbered Page Buttons */}
-    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-      <button
-        key={page}
-        onClick={() => setCurrentPage(page)}
-        className={`px-3 py-1 rounded-full border ${
-          page === currentPage
-            ? "bg-gray-800 text-white border-gray-800"
-            : "bg-white text-gray-800 border-gray-300 hover:bg-gray-200"
-        } transition`}
-      >
-        {page}
-      </button>
-    ))}
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <button
+              key={page}
+              onClick={() => setCurrentPage(page)}
+              className={`px-3 py-1 rounded-full border ${
+                page === currentPage
+                  ? "bg-gray-800 text-white border-gray-800"
+                  : "bg-white text-gray-800 border-gray-300 hover:bg-gray-200"
+              } transition`}
+            >
+              {page}
+            </button>
+          ))}
 
-    {/* Next Button */}
-    <button
-      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-      disabled={currentPage === totalPages}
-      className={`px-3 py-1 rounded-full border ${
-        currentPage === totalPages
-          ? "bg-gray-300 text-gray-600 border-gray-300 cursor-not-allowed"
-          : "bg-white text-gray-800 border-gray-300 hover:bg-gray-200"
-      } transition`}
-    >
-      Next
-    </button>
-  </div>
-)}
+          <button
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className={`px-3 py-1 rounded-full border ${
+              currentPage === totalPages
+                ? "bg-gray-300 text-gray-600 border-gray-300 cursor-not-allowed"
+                : "bg-white text-gray-800 border-gray-300 hover:bg-gray-200"
+            } transition`}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 };
