@@ -47,6 +47,15 @@ const PhoneDetails = () => {
       </div>
     );
 
+  // Handle backward compatibility: single image vs multiple
+  const images = phone.imageUrls && phone.imageUrls.length > 0
+    ? phone.imageUrls
+    : phone.imageUrl
+      ? [phone.imageUrl]
+      : [];
+
+  const [selectedImage, setSelectedImage] = useState(images[0]);
+
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       <motion.div
@@ -56,18 +65,39 @@ const PhoneDetails = () => {
         transition={{ duration: 0.5 }}
       >
         {/* Image Section */}
-        <div className="md:w-1/2 bg-gray-100 flex items-center justify-center p-6">
-          {phone.imageUrl ? (
-            <motion.img
-              src={phone.imageUrl}
-              alt={phone.name}
-              className="w-full h-96 object-contain rounded-xl"
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.3 }}
-            />
+        <div className="md:w-1/2 bg-gray-100 flex flex-col items-center justify-center p-6">
+          {images.length > 0 ? (
+            <>
+              <motion.img
+                key={selectedImage}
+                src={selectedImage}
+                alt={phone.name}
+                className="w-full h-96 object-contain rounded-xl mb-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              />
+
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {images.map((img, index) => (
+                  <motion.img
+                    key={index}
+                    src={img}
+                    alt={`${phone.name} view ${index + 1}`}
+                    className={`w-20 h-20 object-cover rounded-lg cursor-pointer border-2 ${
+                      selectedImage === img
+                        ? "border-green-600"
+                        : "border-transparent hover:border-gray-300"
+                    }`}
+                    onClick={() => setSelectedImage(img)}
+                    whileHover={{ scale: 1.1 }}
+                  />
+                ))}
+              </div>
+            </>
           ) : (
             <div className="w-full h-96 flex items-center justify-center text-gray-400 bg-gray-200 rounded-xl">
-              No Image Available
+              No Images Available
             </div>
           )}
         </div>

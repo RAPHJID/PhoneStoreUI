@@ -49,7 +49,6 @@ const Phones = () => {
     setCurrentPage(1);
   }, [searchTerm, sortOption, phones]);
 
-  // Loading + error states
   if (loading)
     return (
       <div className="flex justify-center items-center h-64">
@@ -74,7 +73,6 @@ const Phones = () => {
     <div className="p-4">
       {/* Search, Sort, Clear */}
       <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center max-w-2xl mx-auto">
-        {/* Search */}
         <div className="relative flex-1 w-full">
           <input
             type="text"
@@ -98,7 +96,6 @@ const Phones = () => {
           </svg>
         </div>
 
-        {/* Sort */}
         <select
           value={sortOption}
           onChange={(e) => setSortOption(e.target.value)}
@@ -113,7 +110,6 @@ const Phones = () => {
           <option value="name-desc">Name: Z → A</option>
         </select>
 
-        {/* Clear Filters */}
         <button
           onClick={() => {
             setSearchTerm("");
@@ -128,53 +124,48 @@ const Phones = () => {
 
       {/* Phones Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {currentPhones.map((phone) => (
-          <div
-            key={phone.id}
-            className="relative border rounded-lg p-4 shadow hover:shadow-2xl hover:scale-105 transition-transform duration-300 cursor-pointer group bg-white"
-          >
-            {phone.imageUrl ? (
-              <img
-                src={phone.imageUrl}
-                alt={phone.name}
-                className="w-full h-40 object-cover mb-4 rounded"
-              />
-            ) : (
-              <div className="w-full h-40 bg-gray-200 flex items-center justify-center mb-4 rounded">
-                <span className="text-gray-500">No Image</span>
-              </div>
-            )}
+        {currentPhones.map((phone) => {
+          const previewImage =
+            (phone.imageUrls && phone.imageUrls.length > 0 && phone.imageUrls[0]) ||
+            phone.imageUrl ||
+            "/placeholder.png";
 
-            <div className="absolute top-3 right-3">
-              {phone.stockQuantity === 0 ? (
-                <span className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">Out of Stock</span>
-              ) : phone.stockQuantity < 5 ? (
-                <span className="bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full">Low Stock</span>
-              ) : (
-                <span className="bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-full">In Stock</span>
-              )}
-            </div>
-
-            {phone.isNew && (
-              <div className="absolute top-3 left-3">
-                <span className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">New</span>
-              </div>
-            )}
-
-            <h2 className="text-lg font-bold mt-2">{phone.name}</h2>
-            <p className="text-sm text-gray-600">{phone.brand}</p>
-            <p className="text-sm">{phone.description || "No description"}</p>
-            <p className="text-lg font-semibold mt-2">Price: ${phone.price}</p>
-
-            {/* View Details Button */}
-            <button
+          return (
+            <div
+              key={phone.id}
+              className="relative border rounded-lg p-4 shadow hover:shadow-2xl hover:scale-105 transition-transform duration-300 cursor-pointer group bg-white"
               onClick={() => navigate(`/phones/${phone.id}`)}
-              className="mt-3 w-full bg-gray-800 text-white py-2 rounded hover:bg-gray-700 transition"
             >
-              View Details
-            </button>
-          </div>
-        ))}
+              <img
+                src={previewImage}
+                alt={phone.name}
+                className="w-full h-48 object-cover mb-4 rounded-lg"
+                onError={(e) => (e.target.src = "/placeholder.png")}
+              />
+
+              <div className="absolute top-3 right-3">
+                {phone.stockQuantity === 0 ? (
+                  <span className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">Out of Stock</span>
+                ) : phone.stockQuantity < 5 ? (
+                  <span className="bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full">Low Stock</span>
+                ) : (
+                  <span className="bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-full">In Stock</span>
+                )}
+              </div>
+
+              {phone.isNew && (
+                <div className="absolute top-3 left-3">
+                  <span className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">New</span>
+                </div>
+              )}
+
+              <h2 className="text-lg font-bold mt-2">{phone.name}</h2>
+              <p className="text-sm text-gray-600">{phone.brand}</p>
+              <p className="text-sm truncate">{phone.description || "No description"}</p>
+              <p className="text-lg font-semibold mt-2">Price: ${phone.price}</p>
+            </div>
+          );
+        })}
       </div>
 
       {/* Pagination */}
