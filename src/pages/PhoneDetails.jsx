@@ -4,11 +4,16 @@ import { motion } from "framer-motion";
 
 const PhoneDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+
+  // ✅ All hooks are declared first
   const [phone, setPhone] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
+  const [images, setImages] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
 
+  // ✅ Fetch phone data
   useEffect(() => {
     const fetchPhone = async () => {
       try {
@@ -16,6 +21,17 @@ const PhoneDetails = () => {
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         setPhone(data);
+
+        // Prepare images once data is fetched
+        const imgArray =
+          data.imageUrls && data.imageUrls.length > 0
+            ? data.imageUrls
+            : data.imageUrl
+            ? [data.imageUrl]
+            : [];
+
+        setImages(imgArray);
+        if (imgArray.length > 0) setSelectedImage(imgArray[0]);
       } catch (err) {
         console.error("Error fetching phone:", err);
         setError(err.message);
@@ -26,6 +42,7 @@ const PhoneDetails = () => {
     fetchPhone();
   }, [id]);
 
+  // ✅ Conditional returns are AFTER all hooks
   if (loading)
     return (
       <div className="flex justify-center items-center h-screen text-gray-500 text-lg">
@@ -46,15 +63,6 @@ const PhoneDetails = () => {
         No phone found.
       </div>
     );
-
-  // Handle backward compatibility: single image vs multiple
-  const images = phone.imageUrls && phone.imageUrls.length > 0
-    ? phone.imageUrls
-    : phone.imageUrl
-      ? [phone.imageUrl]
-      : [];
-
-  const [selectedImage, setSelectedImage] = useState(images[0]);
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
